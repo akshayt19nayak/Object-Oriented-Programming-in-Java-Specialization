@@ -13,6 +13,7 @@ import de.fhpotsdam.unfolding.utils.MapUtils;
   * Author: UC San Diego Coursera Intermediate Programming team
   * @author Your name here
   * Date: July 17, 2015
+  * 12.9392252,77.6232064
   * */
 public class HelloWorld extends PApplet
 {
@@ -76,7 +77,9 @@ public class HelloWorld extends PApplet
 		
 		// TODO: Add code here that creates map2 
 		// Then you'll modify draw() below
-
+		map2 = new UnfoldingMap(this, 420, 50, 350, 500, provider);
+		map2.zoomAndPanTo(zoomLevel, new Location(12.9f, 77.6f));
+		MapUtils.createDefaultEventDispatcher(this, map2);		
 	}
 
 	/** Draw the Applet window.  */
@@ -84,6 +87,7 @@ public class HelloWorld extends PApplet
 		// So far we only draw map1...
 		// TODO: Add code so that both maps are displayed
 		map1.draw();
+		map2.draw();
 	}
 
 	

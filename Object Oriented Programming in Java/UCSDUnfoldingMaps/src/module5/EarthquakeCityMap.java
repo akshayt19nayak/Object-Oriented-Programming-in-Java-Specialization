@@ -35,7 +35,7 @@ public class EarthquakeCityMap extends PApplet {
 	private static final long serialVersionUID = 1L;
 
 	// IF YOU ARE WORKING OFFILINE, change the value of this variable to true
-	private static final boolean offline = false;
+	private static final boolean offline = true;
 	
 	/** This is where to find the local tiles, for working without an Internet connection */
 	public static String mbTilesString = "blankLight-1-3.mbtiles";
@@ -146,6 +146,15 @@ public class EarthquakeCityMap extends PApplet {
 	private void selectMarkerIfHover(List<Marker> markers)
 	{
 		// TODO: Implement this method
+		for (Marker m: markers) {
+			if (m.isInside(map, mouseX, mouseY)) {
+				if (lastSelected == null) {
+					m.setSelected(true);
+					lastSelected = (CommonMarker) m;
+				}
+				break;
+			}
+		}
 	}
 	
 	/** The event handler for mouse clicks
@@ -159,9 +168,64 @@ public class EarthquakeCityMap extends PApplet {
 		// TODO: Implement this method
 		// Hint: You probably want a helper method or two to keep this code
 		// from getting too long/disorganized
+		if (lastClicked != null) {
+			unhideMarkers();
+			lastClicked = null;
+		}
+		else {
+			isEarthquakeClicked();
+			isCityClicked();
+			if (lastClicked == null) {
+				unhideMarkers();
+			}
+		}
 	}
-	
-	
+	private void isEarthquakeClicked() {
+		if (lastClicked != null) {
+			return;
+		}
+		for (Marker qm: quakeMarkers) {
+			if (qm.isInside(map, mouseX, mouseY)){
+				lastClicked = (CommonMarker) qm;
+				for (Marker cm : cityMarkers) {
+					double threatDistance = ((EarthquakeMarker)qm).threatCircle();
+					if (qm.getDistanceTo(cm.getLocation()) > threatDistance) {
+						cm.setHidden(true);
+					}
+					else {
+						//System.out.println(threatDistance + " " + qm.getDistanceTo(cm.getLocation()));
+						cm.setHidden(false);
+					}
+				}
+			}
+			else {
+				qm.setHidden(true);
+			}
+		}
+	}
+	private void isCityClicked() {
+		if (lastClicked != null) {
+			return;
+		}
+		for (Marker cm: cityMarkers) {
+			if (cm.isInside(map, mouseX, mouseY)){
+				lastClicked = (CommonMarker) cm;
+				for (Marker qm : quakeMarkers) {
+					double threatDistance = ((EarthquakeMarker)qm).threatCircle();
+					if (qm.getDistanceTo(cm.getLocation()) >= threatDistance) {
+						qm.setHidden(true);
+					}
+					else {
+						//System.out.println(threatDistance + " " + qm.getDistanceTo(cm.getLocation()));
+						qm.setHidden(false);
+					}
+				}
+			}
+			else {
+				cm.setHidden(true);
+			}
+		}
+	}
 	// loop over and unhide all markers
 	private void unhideMarkers() {
 		for(Marker marker : quakeMarkers) {
@@ -235,9 +299,6 @@ public class EarthquakeCityMap extends PApplet {
 		line(centerx-8, centery+8, centerx+8, centery-8);
 			
 	}
-
-	
-	
 	// Checks whether this quake occurred on land.  If it did, it sets the 
 	// "country" property of its PointFeature to the country where it occurred
 	// and returns true.  Notice that the helper method isInCountry will
@@ -278,9 +339,6 @@ public class EarthquakeCityMap extends PApplet {
 		}
 		System.out.println("OCEAN QUAKES: " + totalWaterQuakes);
 	}
-	
-	
-	
 	// helper method to test whether a given earthquake is in a given country
 	// This will also add the country property to the properties of the earthquake feature if 
 	// it's in one of the countries.
